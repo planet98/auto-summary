@@ -3,8 +3,7 @@ import React, { useState } from 'react';
 import Header from './components/Header';
 import SummaryCard from './components/SummaryCard';
 import { extractTextFromPdf } from './utils/pdfProcessor';
-// Switch from Cloudflare proxy to direct Gemini service for better context handling
-import { summarizePaper } from './services/geminiService';
+import { summarizePaper } from './services/aiService';
 import { AppState } from './types';
 
 const App: React.FC = () => {
@@ -38,7 +37,7 @@ const App: React.FC = () => {
       setState(prev => ({ ...prev, pdfText: text, isProcessing: false }));
     } catch (err) {
       console.error(err);
-      setState(prev => ({ ...prev, error: '提取 PDF 文本失败，请重试。', isProcessing: false }));
+      setState(prev => ({ ...prev, error: '提取 PDF 文本失败，请确保文件未加密。', isProcessing: false }));
     }
   };
 
@@ -48,37 +47,43 @@ const App: React.FC = () => {
     setState(prev => ({ ...prev, isSummarizing: true, error: null }));
     
     try {
-      // Direct call to Gemini service
       const summary = await summarizePaper(state.pdfText);
       setState(prev => ({ ...prev, result: summary, isSummarizing: false }));
     } catch (err: any) {
       console.error(err);
       setState(prev => ({ 
         ...prev, 
-        error: err.message || 'AI 总结失败，请检查 API Key 配置。', 
+        error: err.message || 'AI 总结失败，请确认 Cloudflare Pages 已绑定 Workers AI。', 
         isSummarizing: false 
       }));
     }
   };
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-slate-50 selection:bg-blue-100">
       <Header />
       
       <main className="flex-grow max-w-5xl mx-auto px-4 sm:px-6 py-10 w-full">
         {!state.result && (
           <div className="max-w-2xl mx-auto text-center space-y-8 animate-in fade-in zoom-in-95 duration-700">
             <div className="space-y-4">
-              <h2 className="text-4xl font-extrabold text-slate-900 tracking-tight">
-                快速理解学术前沿
+              <div className="inline-flex items-center gap-2 px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-bold tracking-wide">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
+                </span>
+                CLOUDFLARE WORKERS AI
+              </div>
+              <h2 className="text-4xl font-extrabold text-slate-900 tracking-tight leading-tight">
+                文献深度解析 & 总结
               </h2>
               <p className="text-lg text-slate-600">
-                使用 Google Gemini AI 深度剖析技术论文。
+                专为噬菌体展示技术优化的学术 AI，一键生成公众号推文。
               </p>
             </div>
 
-            <div className={`relative border-2 border-dashed rounded-3xl p-12 transition-all duration-300 ${
-              state.file ? 'border-blue-500 bg-blue-50' : 'border-slate-300 hover:border-blue-400 bg-white'
+            <div className={`group relative border-2 border-dashed rounded-3xl p-12 transition-all duration-300 ${
+              state.file ? 'border-blue-500 bg-blue-50' : 'border-slate-300 hover:border-blue-400 bg-white shadow-sm hover:shadow-md'
             }`}>
               <input
                 type="file"
@@ -88,7 +93,7 @@ const App: React.FC = () => {
                 disabled={state.isProcessing || state.isSummarizing}
               />
               <div className="space-y-4">
-                <div className="mx-auto w-16 h-16 bg-blue-100 rounded-2xl flex items-center justify-center text-blue-600">
+                <div className="mx-auto w-16 h-16 bg-blue-100 rounded-2xl flex items-center justify-center text-blue-600 group-hover:scale-110 transition-transform">
                   {state.isProcessing ? (
                     <svg className="w-8 h-8 animate-spin" viewBox="0 0 24 24">
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
@@ -102,9 +107,11 @@ const App: React.FC = () => {
                 </div>
                 <div>
                   <p className="text-lg font-semibold text-slate-900">
-                    {state.file ? state.file.name : '点击或拖拽 PDF 到这里'}
+                    {state.file ? state.file.name : '上传 PDF 论文'}
                   </p>
-                  <p className="text-sm text-slate-500 mt-1">支持超大文本长论文深度分析</p>
+                  <p className="text-sm text-slate-500 mt-1">
+                    {state.isProcessing ? '文本分析中...' : '点击选择或拖拽文件到此处'}
+                  </p>
                 </div>
               </div>
             </div>
@@ -121,10 +128,10 @@ const App: React.FC = () => {
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                     </svg>
-                    Gemini AI 正在生成总结...
+                    Llama 3.1 正在研读论文...
                   </>
                 ) : (
-                  '开始 AI 深度分析'
+                  '立即开始 AI 深度总结'
                 )}
               </button>
             )}
@@ -149,8 +156,11 @@ const App: React.FC = () => {
                 </svg>
                 重新上传
               </button>
-              <div className="text-xs text-slate-400 font-medium">
-                Powered by Google Gemini AI
+              <div className="flex items-center gap-2 px-3 py-1 bg-white rounded-lg border border-slate-200">
+                <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                <span className="text-xs text-slate-500 font-medium">
+                  Cloudflare AI 服务运行正常
+                </span>
               </div>
             </div>
             
@@ -162,7 +172,7 @@ const App: React.FC = () => {
       <footer className="py-8 border-t border-slate-200 mt-12 bg-white">
         <div className="max-w-5xl mx-auto px-4 text-center">
           <p className="text-slate-400 text-sm">
-            © 2024 文献阅读 AI 助手 | 部署于 Cloudflare | Powered by Gemini
+            © 2024 文献阅读 AI 助手 | 部署于 Cloudflare 全球边缘网络 | 专注噬菌体展示技术
           </p>
         </div>
       </footer>
