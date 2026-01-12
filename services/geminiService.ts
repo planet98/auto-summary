@@ -2,6 +2,7 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { SummaryResult } from "../types";
 
+// API Key is obtained from process.env.API_KEY as per guidelines
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
 export const summarizePaper = async (text: string): Promise<SummaryResult> => {
@@ -17,9 +18,10 @@ export const summarizePaper = async (text: string): Promise<SummaryResult> => {
     3. Format the final "wechatDraft" field specifically for a WeChat Official Account post, using emojis, clear headings, and engaging Chinese language.
   `;
 
+  // Increased character limit to 100k to better handle academic papers with Gemini 3's large context
   const response = await ai.models.generateContent({
     model: modelName,
-    contents: `Paper Text:\n\n${text.substring(0, 50000)}`, // Limiting to ~50k chars for safety, though Gemini 3 handles more.
+    contents: `Paper Text:\n\n${text.substring(0, 100000)}`,
     config: {
       systemInstruction,
       responseMimeType: "application/json",
@@ -48,6 +50,7 @@ export const summarizePaper = async (text: string): Promise<SummaryResult> => {
     },
   });
 
-  const jsonStr = response.text.trim();
-  return JSON.parse(jsonStr) as SummaryResult;
+  // response.text is a getter property, not a method
+  const jsonStr = response.text || "{}";
+  return JSON.parse(jsonStr.trim()) as SummaryResult;
 };
