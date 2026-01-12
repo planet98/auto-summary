@@ -1,0 +1,5 @@
+{
+  "name": "Scientific Paper Summarizer (Phage Display Focus)",
+  "description": "A high-performance tool for analyzing scientific PDF papers using Gemini API. Features automated summarization with a specialized focus on Phage Display Peptide Technology, optimized for WeChat Official Account publishing.",
+  "requestFramePermissions": []
+}
