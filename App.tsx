@@ -3,7 +3,8 @@ import React, { useState } from 'react';
 import Header from './components/Header';
 import SummaryCard from './components/SummaryCard';
 import { extractTextFromPdf } from './utils/pdfProcessor';
-import { summarizePaper } from './services/aiService';
+// Fix: Use geminiService instead of the legacy aiService
+import { summarizePaper } from './services/geminiService';
 import { AppState } from './types';
 
 const App: React.FC = () => {
@@ -53,7 +54,7 @@ const App: React.FC = () => {
       console.error(err);
       setState(prev => ({ 
         ...prev, 
-        error: err.message || 'AI 总结失败，请确认 Cloudflare Pages 已绑定 Workers AI。', 
+        error: err.message || 'AI 总结失败，请检查 Gemini API 配置。', 
         isSummarizing: false 
       }));
     }
@@ -72,7 +73,7 @@ const App: React.FC = () => {
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
                 </span>
-                CLOUDFLARE WORKERS AI
+                GEMINI 3 PRO POWERED
               </div>
               <h2 className="text-4xl font-extrabold text-slate-900 tracking-tight leading-tight">
                 文献深度解析 & 总结
@@ -128,7 +129,7 @@ const App: React.FC = () => {
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                     </svg>
-                    Llama 3.1 正在研读论文...
+                    Gemini 3 Pro 正在研读论文...
                   </>
                 ) : (
                   '立即开始 AI 深度总结'
@@ -159,7 +160,7 @@ const App: React.FC = () => {
               <div className="flex items-center gap-2 px-3 py-1 bg-white rounded-lg border border-slate-200">
                 <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
                 <span className="text-xs text-slate-500 font-medium">
-                  Cloudflare AI 服务运行正常
+                  Gemini API 服务运行正常
                 </span>
               </div>
             </div>
@@ -172,7 +173,7 @@ const App: React.FC = () => {
       <footer className="py-8 border-t border-slate-200 mt-12 bg-white">
         <div className="max-w-5xl mx-auto px-4 text-center">
           <p className="text-slate-400 text-sm">
-            © 2024 文献阅读 AI 助手 | 部署于 Cloudflare 全球边缘网络 | 专注噬菌体展示技术
+            © 2024 文献阅读 AI 助手 | 专注噬菌体展示技术
           </p>
         </div>
       </footer>

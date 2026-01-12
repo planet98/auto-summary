@@ -5,8 +5,13 @@ import { SummaryResult } from "../types";
 // API Key is obtained from process.env.API_KEY as per guidelines
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
+/**
+ * Summarizes a scientific paper using Gemini 3 Pro for deep reasoning.
+ * Follows @google/genai guidelines for text generation and structured JSON output.
+ */
 export const summarizePaper = async (text: string): Promise<SummaryResult> => {
-  const modelName = 'gemini-3-flash-preview';
+  // Use 'gemini-3-pro-preview' for complex reasoning tasks like STEM paper analysis
+  const modelName = 'gemini-3-pro-preview';
   
   const systemInstruction = `
     You are an expert scientific researcher and a professional science communicator for WeChat Official Accounts.
@@ -18,7 +23,7 @@ export const summarizePaper = async (text: string): Promise<SummaryResult> => {
     3. Format the final "wechatDraft" field specifically for a WeChat Official Account post, using emojis, clear headings, and engaging Chinese language.
   `;
 
-  // Increased character limit to 100k to better handle academic papers with Gemini 3's large context
+  // Use ai.models.generateContent directly with model name and prompt
   const response = await ai.models.generateContent({
     model: modelName,
     contents: `Paper Text:\n\n${text.substring(0, 100000)}`,

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>文献阅读 AI 助手 - 极简版</title>
+    <title>文献阅读 AI 助手</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <style>
@@ -26,7 +26,6 @@
 </head>
 <body class="text-slate-800">
     <div class="max-w-4xl mx-auto px-4 py-12">
-        <!-- Header -->
         <header class="text-center mb-12">
             <h1 class="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600 mb-4">
                 Paper Insight AI
@@ -34,7 +33,7 @@
             <p class="text-slate-500">文献深度解析 · 噬菌体展示技术专项 · 公众号排版</p>
         </header>
 
-        <!-- Main Card -->
+        <!-- 上传区域 -->
         <div id="upload-section" class="glass border-2 border-dashed border-slate-300 rounded-3xl p-10 text-center transition-all hover:border-blue-500">
             <input type="file" id="pdf-input" accept=".pdf" class="hidden">
             <label for="pdf-input" class="cursor-pointer">
@@ -42,22 +41,21 @@
                     <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
                 </div>
                 <h3 id="file-name" class="text-xl font-bold mb-2">点击上传 PDF 文献</h3>
-                <p class="text-slate-400">支持最大 50 页的科研论文</p>
+                <p class="text-slate-400">支持最大 30 页的科研论文</p>
             </label>
             <button id="analyze-btn" class="mt-8 px-10 py-4 bg-blue-600 text-white font-bold rounded-2xl shadow-lg hover:bg-blue-700 transition-all hidden w-full sm:w-auto">
                 开始 AI 深度分析
             </button>
         </div>
 
-        <!-- Loading -->
+        <!-- 加载状态 -->
         <div id="loading" class="hidden text-center py-12">
             <div class="inline-block animate-spin w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full mb-4"></div>
-            <p class="text-blue-600 font-medium animate-pulse">Llama 3.1 正在阅读论文，这可能需要几十秒...</p>
+            <p id="loading-text" class="text-blue-600 font-medium animate-pulse">正在解析 PDF...</p>
         </div>
 
-        <!-- Result Section -->
+        <!-- 结果展示区 -->
         <div id="result-section" class="hidden space-y-8 mt-12">
-            <!-- Summary -->
             <div class="bg-white rounded-3xl p-8 shadow-sm border border-slate-100">
                 <h2 id="res-title" class="text-2xl font-bold mb-6 text-slate-900"></h2>
                 <div class="space-y-6">
@@ -72,30 +70,21 @@
                 </div>
             </div>
 
-            <!-- Focus Section -->
-            <div class="bg-gradient-to-br from-indigo-600 to-blue-700 rounded-3xl p-8 text-white shadow-xl relative overflow-hidden">
-                <div class="relative z-10">
-                    <h3 class="text-xl font-bold mb-4 flex items-center gap-2">🧬 噬菌体展示技术专项解析</h3>
-                    <p id="res-phage" class="bg-white/10 backdrop-blur-md p-5 rounded-2xl border border-white/20 leading-relaxed"></p>
-                </div>
+            <div class="bg-gradient-to-br from-indigo-600 to-blue-700 rounded-3xl p-8 text-white shadow-xl">
+                <h3 class="text-xl font-bold mb-4 flex items-center gap-2">🧬 噬菌体展示技术专项解析</h3>
+                <p id="res-phage" class="bg-white/10 backdrop-blur-md p-5 rounded-2xl border border-white/20 leading-relaxed"></p>
             </div>
 
-            <!-- WeChat Draft -->
             <div class="bg-slate-900 rounded-3xl overflow-hidden shadow-2xl">
                 <div class="p-6 border-b border-slate-800 flex justify-between items-center">
                     <h3 class="text-white font-bold">微信公众号推文草稿</h3>
-                    <button id="copy-btn" class="text-xs bg-green-500 text-white px-4 py-2 rounded-lg font-bold hover:bg-green-600 active:scale-95 transition-all">
-                        复制全文
-                    </button>
+                    <button id="copy-btn" class="text-xs bg-green-500 text-white px-4 py-2 rounded-lg font-bold hover:bg-green-600 active:scale-95 transition-all">复制全文</button>
                 </div>
                 <div class="p-8">
                     <div id="res-wechat" class="bg-white rounded-2xl p-6 text-slate-800 text-sm whitespace-pre-wrap leading-relaxed max-h-[600px] overflow-y-auto"></div>
                 </div>
             </div>
-            
-            <button onclick="location.reload()" class="w-full py-4 text-slate-400 text-sm font-medium hover:text-slate-600">
-                ← 重新上传另一篇
-            </button>
+            <button onclick="location.reload()" class="w-full py-4 text-slate-400 text-sm font-medium hover:text-slate-600">← 重新上传另一篇</button>
         </div>
     </div>
 
@@ -104,9 +93,9 @@
         const fileNameDisp = document.getElementById('file-name');
         const analyzeBtn = document.getElementById('analyze-btn');
         const loading = document.getElementById('loading');
+        const loadingText = document.getElementById('loading-text');
         const uploadSection = document.getElementById('upload-section');
         const resultSection = document.getElementById('result-section');
-        const copyBtn = document.getElementById('copy-btn');
 
         let extractedText = "";
 
@@ -116,8 +105,16 @@
             fileNameDisp.innerText = file.name;
             analyzeBtn.classList.remove('hidden');
             
-            // 提取文本
-            extractedText = await extractText(file);
+            loading.classList.remove('hidden');
+            loadingText.innerText = "正在提取 PDF 文本...";
+            try {
+                extractedText = await extractText(file);
+                loadingText.innerText = "文本提取完成，点击按钮开始分析";
+            } catch (err) {
+                alert("PDF 解析失败：" + err.message);
+            } finally {
+                loading.classList.add('hidden');
+            }
         };
 
         async function extractText(file) {
@@ -125,20 +122,20 @@
             pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
             const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
             let text = "";
-            const pages = Math.min(pdf.numPages, 30); // 限制页数防止过长
+            const pages = Math.min(pdf.numPages, 30);
             for (let i = 1; i <= pages; i++) {
                 const page = await pdf.getPage(i);
                 const content = await page.getTextContent();
                 text += content.items.map(s => s.str).join(" ") + "\n";
             }
-            return text;
+            return text.trim();
         }
 
         analyzeBtn.onclick = async () => {
-            if (!extractedText) return alert("文本提取失败");
-            
+            if (!extractedText) return alert("请先上传文件");
             uploadSection.classList.add('hidden');
             loading.classList.remove('hidden');
+            loadingText.innerText = "Llama 3.1 正在阅读论文，请稍候...";
 
             try {
                 const res = await fetch('/api/summarize', {
@@ -147,9 +144,16 @@
                     body: JSON.stringify({ text: extractedText })
                 });
                 
-                if (!res.ok) throw new Error("AI 响应异常，请检查 Cloudflare 绑定");
+                const rawText = await res.text();
+                let data;
+                try {
+                    // 容错处理：清理可能存在的 Markdown 标记
+                    const jsonStr = rawText.match(/\{[\s\S]*\}/)[0];
+                    data = JSON.parse(jsonStr);
+                } catch (e) {
+                    throw new Error("AI 返回格式错误，请重试。原文：" + rawText.substring(0, 100));
+                }
                 
-                const data = await res.json();
                 renderResult(data);
             } catch (err) {
                 alert(err.message);
@@ -160,27 +164,25 @@
         };
 
         function renderResult(data) {
-            document.getElementById('res-title').innerText = data.title;
-            document.getElementById('res-abstract').innerText = data.abstract;
-            document.getElementById('res-phage').innerText = data.phageDisplayFocus;
-            document.getElementById('res-wechat').innerText = data.wechatDraft;
+            document.getElementById('res-title').innerText = data.title || "分析完成";
+            document.getElementById('res-abstract').innerText = data.abstract || "";
+            document.getElementById('res-phage').innerText = data.phageDisplayFocus || "本文未涉及该技术。";
+            document.getElementById('res-wechat').innerText = data.wechatDraft || "";
             
             const list = document.getElementById('res-findings');
             list.innerHTML = "";
-            data.keyFindings.forEach((f, i) => {
+            (data.keyFindings || []).forEach((f, i) => {
                 const li = document.createElement('li');
                 li.className = "flex gap-3 text-sm text-slate-600 bg-slate-50 p-3 rounded-xl";
-                li.innerHTML = `<span class="bg-blue-600 text-white w-5 h-5 rounded flex items-center justify-center text-[10px] font-bold shrink-0">${i+1}</span> ${f}`;
+                li.innerHTML = `<span class="bg-blue-600 text-white w-5 h-5 rounded flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">${i+1}</span> ${f}`;
                 list.appendChild(li);
             });
-
             resultSection.classList.remove('hidden');
         }
 
-        copyBtn.onclick = () => {
+        document.getElementById('copy-btn').onclick = () => {
             const text = document.getElementById('res-wechat').innerText;
-            navigator.clipboard.writeText(text);
-            alert("已复制！可以去公众号后台粘贴了。");
+            navigator.clipboard.writeText(text).then(() => alert("已复制到剪贴板！"));
         };
     </script>
 </body>
