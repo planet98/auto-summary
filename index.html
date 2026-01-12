@@ -1,20 +1,20 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Paper Insight AI - Cloudflare Native</title>
+    <title>文献阅读 AI 助手 - 极简版</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-        body { font-family: 'Inter', sans-serif; }
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&display=swap');
+        body { font-family: 'Noto+Sans+SC', sans-serif; background-color: #f8fafc; }
+        .glass { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(10px); }
     </style>
 <script type="importmap">
 {
   "imports": {
     "react": "https://esm.sh/react@^19.2.3",
-    "react-dom": "https://esm.sh/react-dom@^19.2.3",
     "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
     "react/": "https://esm.sh/react@^19.2.3/",
     "@google/genai": "https://esm.sh/@google/genai@^1.35.0",
@@ -24,9 +24,164 @@
 }
 </script>
 </head>
-<body class="bg-slate-50 text-slate-900">
-    <div id="root"></div>
-    <!-- 添加入口脚本 -->
-    <script type="module" src="./index.tsx"></script>
+<body class="text-slate-800">
+    <div class="max-w-4xl mx-auto px-4 py-12">
+        <!-- Header -->
+        <header class="text-center mb-12">
+            <h1 class="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600 mb-4">
+                Paper Insight AI
+            </h1>
+            <p class="text-slate-500">文献深度解析 · 噬菌体展示技术专项 · 公众号排版</p>
+        </header>
+
+        <!-- Main Card -->
+        <div id="upload-section" class="glass border-2 border-dashed border-slate-300 rounded-3xl p-10 text-center transition-all hover:border-blue-500">
+            <input type="file" id="pdf-input" accept=".pdf" class="hidden">
+            <label for="pdf-input" class="cursor-pointer">
+                <div class="w-20 h-20 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                    <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
+                </div>
+                <h3 id="file-name" class="text-xl font-bold mb-2">点击上传 PDF 文献</h3>
+                <p class="text-slate-400">支持最大 50 页的科研论文</p>
+            </label>
+            <button id="analyze-btn" class="mt-8 px-10 py-4 bg-blue-600 text-white font-bold rounded-2xl shadow-lg hover:bg-blue-700 transition-all hidden w-full sm:w-auto">
+                开始 AI 深度分析
+            </button>
+        </div>
+
+        <!-- Loading -->
+        <div id="loading" class="hidden text-center py-12">
+            <div class="inline-block animate-spin w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full mb-4"></div>
+            <p class="text-blue-600 font-medium animate-pulse">Llama 3.1 正在阅读论文，这可能需要几十秒...</p>
+        </div>
+
+        <!-- Result Section -->
+        <div id="result-section" class="hidden space-y-8 mt-12">
+            <!-- Summary -->
+            <div class="bg-white rounded-3xl p-8 shadow-sm border border-slate-100">
+                <h2 id="res-title" class="text-2xl font-bold mb-6 text-slate-900"></h2>
+                <div class="space-y-6">
+                    <div>
+                        <span class="text-xs font-black uppercase tracking-widest text-blue-600 bg-blue-50 px-2 py-1 rounded">核心摘要</span>
+                        <p id="res-abstract" class="mt-3 text-slate-600 leading-relaxed"></p>
+                    </div>
+                    <div>
+                        <span class="text-xs font-black uppercase tracking-widest text-blue-600 bg-blue-50 px-2 py-1 rounded">关键突破</span>
+                        <ul id="res-findings" class="mt-4 space-y-3"></ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Focus Section -->
+            <div class="bg-gradient-to-br from-indigo-600 to-blue-700 rounded-3xl p-8 text-white shadow-xl relative overflow-hidden">
+                <div class="relative z-10">
+                    <h3 class="text-xl font-bold mb-4 flex items-center gap-2">🧬 噬菌体展示技术专项解析</h3>
+                    <p id="res-phage" class="bg-white/10 backdrop-blur-md p-5 rounded-2xl border border-white/20 leading-relaxed"></p>
+                </div>
+            </div>
+
+            <!-- WeChat Draft -->
+            <div class="bg-slate-900 rounded-3xl overflow-hidden shadow-2xl">
+                <div class="p-6 border-b border-slate-800 flex justify-between items-center">
+                    <h3 class="text-white font-bold">微信公众号推文草稿</h3>
+                    <button id="copy-btn" class="text-xs bg-green-500 text-white px-4 py-2 rounded-lg font-bold hover:bg-green-600 active:scale-95 transition-all">
+                        复制全文
+                    </button>
+                </div>
+                <div class="p-8">
+                    <div id="res-wechat" class="bg-white rounded-2xl p-6 text-slate-800 text-sm whitespace-pre-wrap leading-relaxed max-h-[600px] overflow-y-auto"></div>
+                </div>
+            </div>
+            
+            <button onclick="location.reload()" class="w-full py-4 text-slate-400 text-sm font-medium hover:text-slate-600">
+                ← 重新上传另一篇
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const pdfInput = document.getElementById('pdf-input');
+        const fileNameDisp = document.getElementById('file-name');
+        const analyzeBtn = document.getElementById('analyze-btn');
+        const loading = document.getElementById('loading');
+        const uploadSection = document.getElementById('upload-section');
+        const resultSection = document.getElementById('result-section');
+        const copyBtn = document.getElementById('copy-btn');
+
+        let extractedText = "";
+
+        pdfInput.onchange = async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            fileNameDisp.innerText = file.name;
+            analyzeBtn.classList.remove('hidden');
+            
+            // 提取文本
+            extractedText = await extractText(file);
+        };
+
+        async function extractText(file) {
+            const arrayBuffer = await file.arrayBuffer();
+            pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+            const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+            let text = "";
+            const pages = Math.min(pdf.numPages, 30); // 限制页数防止过长
+            for (let i = 1; i <= pages; i++) {
+                const page = await pdf.getPage(i);
+                const content = await page.getTextContent();
+                text += content.items.map(s => s.str).join(" ") + "\n";
+            }
+            return text;
+        }
+
+        analyzeBtn.onclick = async () => {
+            if (!extractedText) return alert("文本提取失败");
+            
+            uploadSection.classList.add('hidden');
+            loading.classList.remove('hidden');
+
+            try {
+                const res = await fetch('/api/summarize', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text: extractedText })
+                });
+                
+                if (!res.ok) throw new Error("AI 响应异常，请检查 Cloudflare 绑定");
+                
+                const data = await res.json();
+                renderResult(data);
+            } catch (err) {
+                alert(err.message);
+                uploadSection.classList.remove('hidden');
+            } finally {
+                loading.classList.add('hidden');
+            }
+        };
+
+        function renderResult(data) {
+            document.getElementById('res-title').innerText = data.title;
+            document.getElementById('res-abstract').innerText = data.abstract;
+            document.getElementById('res-phage').innerText = data.phageDisplayFocus;
+            document.getElementById('res-wechat').innerText = data.wechatDraft;
+            
+            const list = document.getElementById('res-findings');
+            list.innerHTML = "";
+            data.keyFindings.forEach((f, i) => {
+                const li = document.createElement('li');
+                li.className = "flex gap-3 text-sm text-slate-600 bg-slate-50 p-3 rounded-xl";
+                li.innerHTML = `<span class="bg-blue-600 text-white w-5 h-5 rounded flex items-center justify-center text-[10px] font-bold shrink-0">${i+1}</span> ${f}`;
+                list.appendChild(li);
+            });
+
+            resultSection.classList.remove('hidden');
+        }
+
+        copyBtn.onclick = () => {
+            const text = document.getElementById('res-wechat').innerText;
+            navigator.clipboard.writeText(text);
+            alert("已复制！可以去公众号后台粘贴了。");
+        };
+    </script>
 </body>
 </html>
