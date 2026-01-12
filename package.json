@@ -1,7 +1,7 @@
 {
-  "name": "auto-summary-simple",
+  "name": "paper-insight-ai",
   "version": "1.0.0",
-  "description": "Zero-build Cloudflare Pages project",
-  "scripts": {},
-  "dependencies": {}
+  "dependencies": {
+    "@google/genai": "^1.35.0"
+  }
 }

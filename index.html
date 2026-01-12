@@ -10,7 +10,6 @@
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&display=swap');
         body { font-family: 'Noto+Sans+SC', sans-serif; background-color: #f8fafc; }
         .glass { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(12px); }
-        .wechat-box { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"; }
     </style>
 <script type="importmap">
 {
@@ -27,7 +26,7 @@
 </head>
 <body class="text-slate-800 antialiased">
     <div class="max-w-4xl mx-auto px-4 py-12">
-        <header class="text-center mb-12 animate-in fade-in slide-in-from-top-4 duration-700">
+        <header class="text-center mb-12">
             <h1 class="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600 mb-4">
                 Paper Insight AI
             </h1>
@@ -44,83 +43,49 @@
                 <h3 id="file-name" class="text-2xl font-bold mb-2 text-slate-800">点击上传 PDF 文献</h3>
                 <p class="text-slate-400">支持最大 50 页的学术论文</p>
             </label>
-            <button id="analyze-btn" class="mt-8 px-12 py-4 bg-blue-600 text-white font-black rounded-2xl shadow-lg shadow-blue-500/20 hover:bg-blue-700 active:scale-95 transition-all hidden w-full sm:w-auto">
+            <button id="analyze-btn" class="mt-8 px-12 py-4 bg-blue-600 text-white font-black rounded-2xl shadow-lg hover:bg-blue-700 transition-all hidden w-full sm:w-auto">
                 立即开始 AI 深度分析
             </button>
         </div>
 
         <!-- 加载状态 -->
-        <div id="loading" class="hidden py-20 text-center animate-in fade-in duration-300">
-            <div class="relative w-16 h-16 mx-auto mb-6">
-                <div class="absolute inset-0 border-4 border-blue-100 rounded-full"></div>
-                <div class="absolute inset-0 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-            </div>
-            <p id="loading-text" class="text-blue-600 font-bold text-lg animate-pulse">正在解析 PDF 文本...</p>
-            <p class="text-slate-400 text-sm mt-2">Gemini 3 Pro 正在研读学术内容，这通常需要 10-20 秒</p>
+        <div id="loading" class="hidden py-20 text-center">
+            <div class="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-6"></div>
+            <p id="loading-text" class="text-blue-600 font-bold text-lg">正在研读论文，请稍候...</p>
         </div>
 
-        <!-- 结果展示区 -->
-        <div id="result-section" class="hidden space-y-8 mt-12 animate-in fade-in slide-in-from-bottom-8 duration-700">
-            <!-- 核心报告 -->
-            <div class="bg-white rounded-[2rem] p-8 sm:p-10 shadow-sm border border-slate-100">
+        <!-- 结果展示 -->
+        <div id="result-section" class="hidden space-y-8 mt-12">
+            <div class="bg-white rounded-[2rem] p-8 shadow-sm border border-slate-100">
                 <h2 id="res-title" class="text-3xl font-black mb-8 text-slate-900 leading-tight"></h2>
-                
-                <div class="grid gap-10">
+                <div class="space-y-6">
                     <div>
-                        <div class="flex items-center gap-2 mb-4">
-                            <span class="w-1.5 h-6 bg-blue-600 rounded-full"></span>
-                            <h3 class="text-xs font-black uppercase tracking-widest text-slate-400">研究摘要</h3>
-                        </div>
+                        <h3 class="text-xs font-black uppercase text-slate-400 mb-2">研究摘要</h3>
                         <p id="res-abstract" class="text-slate-600 leading-relaxed text-lg"></p>
                     </div>
-
                     <div>
-                        <div class="flex items-center gap-2 mb-6">
-                            <span class="w-1.5 h-6 bg-blue-600 rounded-full"></span>
-                            <h3 class="text-xs font-black uppercase tracking-widest text-slate-400">关键科研突破</h3>
-                        </div>
-                        <ul id="res-findings" class="grid gap-4"></ul>
+                        <h3 class="text-xs font-black uppercase text-slate-400 mb-4">关键科研突破</h3>
+                        <ul id="res-findings" class="grid gap-3"></ul>
                     </div>
                 </div>
             </div>
 
-            <!-- 专项模块 -->
-            <div class="bg-gradient-to-br from-indigo-600 to-blue-800 rounded-[2rem] p-10 text-white shadow-2xl relative overflow-hidden group">
-                <div class="absolute -right-12 -top-12 w-64 h-64 bg-white/5 rounded-full blur-3xl group-hover:scale-125 transition-transform duration-1000"></div>
-                <div class="relative z-10">
-                    <h3 class="text-2xl font-black mb-6 flex items-center gap-3">
-                        <span class="p-2 bg-white/20 rounded-xl text-2xl">🧬</span>
-                        噬菌体展示肽技术 (Phage Display) 专项解析
-                    </h3>
-                    <div class="bg-white/10 backdrop-blur-md p-6 rounded-2xl border border-white/20 leading-relaxed text-blue-50">
-                        <p id="res-phage"></p>
-                    </div>
-                </div>
+            <div class="bg-gradient-to-br from-indigo-600 to-blue-800 rounded-[2rem] p-10 text-white shadow-2xl">
+                <h3 class="text-2xl font-black mb-4 flex items-center gap-3">🧬 噬菌体展示肽技术专项解析</h3>
+                <p id="res-phage" class="bg-white/10 backdrop-blur-md p-6 rounded-2xl border border-white/20 leading-relaxed"></p>
             </div>
 
-            <!-- 微信编辑器 -->
-            <div class="bg-slate-900 rounded-[2.5rem] overflow-hidden shadow-2xl border border-slate-800">
-                <div class="px-8 py-6 border-b border-slate-800 flex justify-between items-center bg-slate-900/50 backdrop-blur-md sticky top-0 z-10">
-                    <div class="flex items-center gap-3">
-                        <div class="flex gap-1.5">
-                            <div class="w-3 h-3 rounded-full bg-red-500/80"></div>
-                            <div class="w-3 h-3 rounded-full bg-yellow-500/80"></div>
-                            <div class="w-3 h-3 rounded-full bg-green-500/80"></div>
-                        </div>
-                        <h3 class="text-white/70 font-bold text-sm ml-2">微信公众号推文草稿</h3>
-                    </div>
-                    <button id="copy-btn" class="px-6 py-2.5 bg-green-500 text-white rounded-xl font-black text-sm hover:bg-green-600 active:scale-95 transition-all shadow-lg shadow-green-500/20">
-                        一键复制全文
-                    </button>
+            <div class="bg-slate-900 rounded-[2.5rem] overflow-hidden shadow-2xl">
+                <div class="px-8 py-6 border-b border-slate-800 flex justify-between items-center">
+                    <h3 class="text-white/70 font-bold">微信公众号推文草稿</h3>
+                    <button id="copy-btn" class="px-6 py-2 bg-green-500 text-white rounded-xl font-black text-sm hover:bg-green-600 active:scale-95 transition-all">复制全文</button>
                 </div>
-                <div class="p-8 sm:p-12 bg-slate-800/30">
-                    <div id="res-wechat" class="bg-white rounded-3xl p-8 sm:p-10 text-slate-800 text-[15px] whitespace-pre-wrap leading-[1.8] wechat-box shadow-inner max-h-[700px] overflow-y-auto"></div>
+                <div class="p-8 bg-slate-800/30">
+                    <div id="res-wechat" class="bg-white rounded-3xl p-8 text-slate-800 text-[15px] whitespace-pre-wrap leading-[1.8] max-h-[600px] overflow-y-auto"></div>
                 </div>
             </div>
             
-            <button onclick="location.reload()" class="w-full py-8 text-slate-400 text-sm font-bold hover:text-blue-600 transition-colors">
-                ← 重新上传另一篇论文
-            </button>
+            <button onclick="location.reload()" class="w-full py-4 text-slate-400 text-sm font-bold">← 重新上传另一篇</button>
         </div>
     </div>
 
@@ -129,10 +94,8 @@
         const fileNameDisp = document.getElementById('file-name');
         const analyzeBtn = document.getElementById('analyze-btn');
         const loading = document.getElementById('loading');
-        const loadingText = document.getElementById('loading-text');
         const uploadSection = document.getElementById('upload-section');
         const resultSection = document.getElementById('result-section');
-        const copyBtn = document.getElementById('copy-btn');
 
         let extractedText = "";
 
@@ -143,97 +106,62 @@
             analyzeBtn.classList.remove('hidden');
             
             loading.classList.remove('hidden');
-            loadingText.innerText = "正在提取 PDF 文本...";
+            document.getElementById('loading-text').innerText = "提取 PDF 文本中...";
             try {
-                extractedText = await extractText(file);
-                loadingText.innerText = "文本提取完成，准备分析";
-                analyzeBtn.scrollIntoView({ behavior: 'smooth' });
-            } catch (err) {
-                alert("PDF 解析失败：" + err.message);
-            } finally {
-                loading.classList.add('hidden');
-            }
+                const arrayBuffer = await file.arrayBuffer();
+                pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+                const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+                let text = "";
+                for (let i = 1; i <= Math.min(pdf.numPages, 50); i++) {
+                    const page = await pdf.getPage(i);
+                    const content = await page.getTextContent();
+                    text += content.items.map(s => s.str).join(" ") + "\n";
+                }
+                extractedText = text;
+            } catch (err) { alert("PDF 解析失败"); }
+            finally { loading.classList.add('hidden'); }
         };
 
-        async function extractText(file) {
-            const arrayBuffer = await file.arrayBuffer();
-            pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-            const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-            let text = "";
-            const pages = Math.min(pdf.numPages, 50); // 增加到50页
-            for (let i = 1; i <= pages; i++) {
-                const page = await pdf.getPage(i);
-                const content = await page.getTextContent();
-                text += content.items.map(s => s.str).join(" ") + "\n";
-            }
-            return text.trim();
-        }
-
         analyzeBtn.onclick = async () => {
-            if (!extractedText) return alert("请先上传文件");
             uploadSection.classList.add('hidden');
             loading.classList.remove('hidden');
-            loadingText.innerText = "Gemini 3 Pro 正在深度研读...";
+            document.getElementById('loading-text').innerText = "Gemini 3 Pro 深度研读中...";
 
             try {
                 const res = await fetch('/api/summarize', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ text: extractedText })
+                    body: JSON.stringify({ text: extractedText.substring(0, 50000) })
                 });
+                const raw = await res.text();
+                // 终极 JSON 提取逻辑
+                const jsonMatch = raw.match(/\{[\s\S]*\}/);
+                if (!jsonMatch) throw new Error("AI 响应格式无效");
+                const data = JSON.parse(jsonMatch[0]);
+
+                document.getElementById('res-title').innerText = data.title;
+                document.getElementById('res-abstract').innerText = data.abstract;
+                document.getElementById('res-phage').innerText = data.phageDisplayFocus;
+                document.getElementById('res-wechat').innerText = data.wechatDraft;
                 
-                const rawResponse = await res.text();
-                let data;
-                
-                try {
-                    // 后端已经做了一次清洗，前端再做一次终极容错
-                    const jsonMatch = rawResponse.match(/\{[\s\S]*\}/);
-                    if (!jsonMatch) throw new Error("无法从响应中提取 JSON 结构");
-                    data = JSON.parse(jsonMatch[0]);
-                } catch (e) {
-                    console.error("Parse Error. Raw response:", rawResponse);
-                    throw new Error("AI 返回的数据格式不正确。请重试。");
-                }
-                
-                renderResult(data);
+                const list = document.getElementById('res-findings');
+                list.innerHTML = "";
+                data.keyFindings.forEach((f, i) => {
+                    const li = document.createElement('li');
+                    li.className = "bg-slate-50 p-4 rounded-xl flex gap-3";
+                    li.innerHTML = `<span class="bg-blue-600 text-white w-6 h-6 rounded-lg flex items-center justify-center text-xs font-black shrink-0">${i+1}</span> <span>${f}</span>`;
+                    list.appendChild(li);
+                });
+
+                resultSection.classList.remove('hidden');
             } catch (err) {
-                alert("分析出错: " + err.message);
+                alert("总结失败: " + err.message);
                 uploadSection.classList.remove('hidden');
-            } finally {
-                loading.classList.add('hidden');
-            }
+            } finally { loading.classList.add('hidden'); }
         };
 
-        function renderResult(data) {
-            document.getElementById('res-title').innerText = data.title || "解析报告";
-            document.getElementById('res-abstract').innerText = data.abstract || "暂无摘要";
-            document.getElementById('res-phage').innerText = data.phageDisplayFocus || "本文未提及相关技术。";
-            document.getElementById('res-wechat').innerText = data.wechatDraft || "推文生成失败";
-            
-            const list = document.getElementById('res-findings');
-            list.innerHTML = "";
-            (data.keyFindings || []).forEach((f, i) => {
-                const li = document.createElement('li');
-                li.className = "flex gap-4 text-slate-600 bg-slate-50/50 p-5 rounded-2xl border border-slate-100 items-center";
-                li.innerHTML = `<span class="bg-blue-600 text-white w-7 h-7 rounded-xl flex items-center justify-center text-xs font-black shrink-0 shadow-md shadow-blue-500/20">${i+1}</span> <span class="text-[15px] font-medium leading-relaxed">${f}</span>`;
-                list.appendChild(li);
-            });
-
-            resultSection.classList.remove('hidden');
-            resultSection.scrollIntoView({ behavior: 'smooth' });
-        }
-
-        copyBtn.onclick = () => {
-            const text = document.getElementById('res-wechat').innerText;
-            navigator.clipboard.writeText(text).then(() => {
-                const originalText = copyBtn.innerText;
-                copyBtn.innerText = "✅ 已复制";
-                copyBtn.classList.replace('bg-green-500', 'bg-blue-600');
-                setTimeout(() => {
-                    copyBtn.innerText = originalText;
-                    copyBtn.classList.replace('bg-blue-600', 'bg-green-500');
-                }, 2000);
-            });
+        document.getElementById('copy-btn').onclick = () => {
+            navigator.clipboard.writeText(document.getElementById('res-wechat').innerText);
+            alert("已复制！");
         };
     </script>
 </body>
