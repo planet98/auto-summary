@@ -1,0 +1,7 @@
+
+{
+  "name": "functions",
+  "dependencies": {
+    "@google/genai": "^1.35.0"
+  }
+}

@@ -3,5 +3,8 @@
   "version": "1.0.0",
   "dependencies": {
     "@google/genai": "^1.35.0"
+  },
+  "scripts": {
+    "build": "echo 'No build step required for static assets'"
   }
 }

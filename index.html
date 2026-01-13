@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Paper Insight AI - 文献阅读助手</title>
+    <title>Paper Insight AI - 论文阅读助手</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&display=swap');
-        body { font-family: 'Noto+Sans+SC', sans-serif; background-color: #f8fafc; }
-        .glass { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(12px); }
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;700&display=swap');
+        body { font-family: 'Noto+Sans+SC', sans-serif; background-color: #f1f5f9; }
+        .glass { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(10px); }
     </style>
 <script type="importmap">
 {
@@ -24,89 +24,85 @@
 }
 </script>
 </head>
-<body class="text-slate-800 antialiased">
-    <div class="max-w-4xl mx-auto px-4 py-12">
-        <header class="text-center mb-12">
-            <h1 class="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600 mb-4">
-                Paper Insight AI
-            </h1>
-            <p class="text-slate-500 font-medium">科研论文深度解析 · 噬菌体展示技术专项 · 公众号一键排版</p>
-        </header>
+<body class="p-4 sm:p-8">
+    <div class="max-w-3xl mx-auto">
+        <div class="text-center mb-10">
+            <h1 class="text-3xl font-bold text-blue-600 mb-2">Paper Insight AI</h1>
+            <p class="text-slate-500 font-medium">文献阅读 · 噬菌体展示技术 · 公众号转化</p>
+        </div>
 
-        <!-- 上传区域 -->
-        <div id="upload-section" class="glass border-2 border-dashed border-slate-300 rounded-[2rem] p-12 text-center transition-all hover:border-blue-500 hover:shadow-xl hover:shadow-blue-500/5 cursor-pointer group">
-            <input type="file" id="pdf-input" accept=".pdf" class="hidden">
-            <label for="pdf-input" class="cursor-pointer block">
-                <div class="w-24 h-24 bg-blue-50 text-blue-600 rounded-3xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300">
-                    <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
+        <div id="drop-zone" class="glass border-4 border-dashed border-slate-300 rounded-3xl p-10 text-center hover:border-blue-400 transition-all cursor-pointer">
+            <input type="file" id="file-input" accept=".pdf" class="hidden">
+            <div id="upload-prompt">
+                <div class="text-5xl mb-4">📄</div>
+                <p class="text-lg font-bold text-slate-700">点击或拖拽 PDF 到这里</p>
+                <p class="text-sm text-slate-400 mt-2">支持最大 50 页文献提取</p>
+            </div>
+            <div id="file-info" class="hidden">
+                <p id="selected-file-name" class="font-bold text-blue-600 truncate mb-4"></p>
+                <button id="start-btn" class="px-8 py-3 bg-blue-600 text-white rounded-xl font-bold shadow-lg hover:bg-blue-700 transition-all active:scale-95">开始分析</button>
+            </div>
+        </div>
+
+        <div id="loading" class="hidden mt-10 text-center">
+            <div class="animate-spin inline-block w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full mb-4"></div>
+            <p id="loading-text" class="text-blue-600 font-bold">正在处理中...</p>
+        </div>
+
+        <div id="results" class="hidden mt-10 space-y-6">
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+                <h2 id="res-title" class="text-2xl font-bold text-slate-900 mb-4"></h2>
+                <div class="mb-6">
+                    <h3 class="text-xs font-bold text-blue-500 uppercase mb-2">研究摘要</h3>
+                    <p id="res-abstract" class="text-slate-600 leading-relaxed"></p>
                 </div>
-                <h3 id="file-name" class="text-2xl font-bold mb-2 text-slate-800">点击上传 PDF 文献</h3>
-                <p class="text-slate-400">支持最大 50 页的学术论文</p>
-            </label>
-            <button id="analyze-btn" class="mt-8 px-12 py-4 bg-blue-600 text-white font-black rounded-2xl shadow-lg hover:bg-blue-700 transition-all hidden w-full sm:w-auto">
-                立即开始 AI 深度分析
-            </button>
-        </div>
-
-        <!-- 加载状态 -->
-        <div id="loading" class="hidden py-20 text-center">
-            <div class="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-6"></div>
-            <p id="loading-text" class="text-blue-600 font-bold text-lg">正在研读论文，请稍候...</p>
-        </div>
-
-        <!-- 结果展示 -->
-        <div id="result-section" class="hidden space-y-8 mt-12">
-            <div class="bg-white rounded-[2rem] p-8 shadow-sm border border-slate-100">
-                <h2 id="res-title" class="text-3xl font-black mb-8 text-slate-900 leading-tight"></h2>
-                <div class="space-y-6">
-                    <div>
-                        <h3 class="text-xs font-black uppercase text-slate-400 mb-2">研究摘要</h3>
-                        <p id="res-abstract" class="text-slate-600 leading-relaxed text-lg"></p>
-                    </div>
-                    <div>
-                        <h3 class="text-xs font-black uppercase text-slate-400 mb-4">关键科研突破</h3>
-                        <ul id="res-findings" class="grid gap-3"></ul>
-                    </div>
+                <div>
+                    <h3 class="text-xs font-bold text-blue-500 uppercase mb-2">核心发现</h3>
+                    <ul id="res-findings" class="space-y-2 list-disc list-inside text-slate-600 text-sm"></ul>
                 </div>
             </div>
 
-            <div class="bg-gradient-to-br from-indigo-600 to-blue-800 rounded-[2rem] p-10 text-white shadow-2xl">
-                <h3 class="text-2xl font-black mb-4 flex items-center gap-3">🧬 噬菌体展示肽技术专项解析</h3>
-                <p id="res-phage" class="bg-white/10 backdrop-blur-md p-6 rounded-2xl border border-white/20 leading-relaxed"></p>
+            <div class="bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-6 rounded-2xl shadow-lg">
+                <h3 class="font-bold mb-3 flex items-center gap-2">🧬 噬菌体展示技术专项分析</h3>
+                <p id="res-phage" class="text-blue-50 text-sm leading-relaxed"></p>
             </div>
 
-            <div class="bg-slate-900 rounded-[2.5rem] overflow-hidden shadow-2xl">
-                <div class="px-8 py-6 border-b border-slate-800 flex justify-between items-center">
-                    <h3 class="text-white/70 font-bold">微信公众号推文草稿</h3>
-                    <button id="copy-btn" class="px-6 py-2 bg-green-500 text-white rounded-xl font-black text-sm hover:bg-green-600 active:scale-95 transition-all">复制全文</button>
+            <div class="bg-slate-900 p-6 rounded-2xl shadow-xl">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-white font-bold">微信公众号推文草稿</h3>
+                    <button id="copy-btn" class="text-xs px-4 py-2 bg-green-500 text-white rounded-lg font-bold hover:bg-green-600 transition-all active:scale-95">一键复制全文</button>
                 </div>
-                <div class="p-8 bg-slate-800/30">
-                    <div id="res-wechat" class="bg-white rounded-3xl p-8 text-slate-800 text-[15px] whitespace-pre-wrap leading-[1.8] max-h-[600px] overflow-y-auto"></div>
-                </div>
+                <div id="res-wechat" class="bg-white p-6 rounded-xl text-[15px] text-slate-800 whitespace-pre-wrap max-h-96 overflow-y-auto leading-relaxed shadow-inner font-sans"></div>
             </div>
             
-            <button onclick="location.reload()" class="w-full py-4 text-slate-400 text-sm font-bold">← 重新上传另一篇</button>
+            <button onclick="location.reload()" class="w-full py-4 text-slate-400 text-xs hover:text-blue-600 transition-colors">← 返回重新上传</button>
         </div>
     </div>
 
     <script>
-        const pdfInput = document.getElementById('pdf-input');
-        const fileNameDisp = document.getElementById('file-name');
-        const analyzeBtn = document.getElementById('analyze-btn');
+        const fileInput = document.getElementById('file-input');
+        const dropZone = document.getElementById('drop-zone');
+        const fileInfo = document.getElementById('file-info');
+        const uploadPrompt = document.getElementById('upload-prompt');
+        const startBtn = document.getElementById('start-btn');
         const loading = document.getElementById('loading');
-        const uploadSection = document.getElementById('upload-section');
-        const resultSection = document.getElementById('result-section');
+        const results = document.getElementById('results');
+        const loadingText = document.getElementById('loading-text');
 
-        let extractedText = "";
+        let pdfText = "";
 
-        pdfInput.onchange = async (e) => {
+        dropZone.onclick = () => fileInput.click();
+
+        fileInput.onchange = async (e) => {
             const file = e.target.files[0];
             if (!file) return;
-            fileNameDisp.innerText = file.name;
-            analyzeBtn.classList.remove('hidden');
             
+            document.getElementById('selected-file-name').innerText = file.name;
+            uploadPrompt.classList.add('hidden');
+            fileInfo.classList.remove('hidden');
+
             loading.classList.remove('hidden');
-            document.getElementById('loading-text').innerText = "提取 PDF 文本中...";
+            loadingText.innerText = "提取文献文本中...";
             try {
                 const arrayBuffer = await file.arrayBuffer();
                 pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
@@ -117,51 +113,63 @@
                     const content = await page.getTextContent();
                     text += content.items.map(s => s.str).join(" ") + "\n";
                 }
-                extractedText = text;
-            } catch (err) { alert("PDF 解析失败"); }
-            finally { loading.classList.add('hidden'); }
+                pdfText = text;
+            } catch (err) {
+                alert("PDF解析失败: " + err.message);
+            } finally {
+                loading.classList.add('hidden');
+            }
         };
 
-        analyzeBtn.onclick = async () => {
-            uploadSection.classList.add('hidden');
+        startBtn.onclick = async (e) => {
+            e.stopPropagation();
+            if (!pdfText) return;
+
+            fileInfo.classList.add('hidden');
             loading.classList.remove('hidden');
-            document.getElementById('loading-text').innerText = "Gemini 3 Pro 深度研读中...";
+            loadingText.innerText = "Gemini 3 Pro 正在深度研读并排版...";
 
             try {
                 const res = await fetch('/api/summarize', {
                     method: 'POST',
-                    body: JSON.stringify({ text: extractedText.substring(0, 50000) })
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text: pdfText })
                 });
-                const raw = await res.text();
-                // 终极 JSON 提取逻辑
-                const jsonMatch = raw.match(/\{[\s\S]*\}/);
-                if (!jsonMatch) throw new Error("AI 响应格式无效");
-                const data = JSON.parse(jsonMatch[0]);
 
-                document.getElementById('res-title').innerText = data.title;
-                document.getElementById('res-abstract').innerText = data.abstract;
-                document.getElementById('res-phage').innerText = data.phageDisplayFocus;
-                document.getElementById('res-wechat').innerText = data.wechatDraft;
+                if (!res.ok) {
+                  const errBody = await res.json();
+                  throw new Error(errBody.error || "请求后端失败");
+                }
+
+                const data = await res.json();
                 
-                const list = document.getElementById('res-findings');
-                list.innerHTML = "";
-                data.keyFindings.forEach((f, i) => {
+                document.getElementById('res-title').innerText = data.title || "未命名文献";
+                document.getElementById('res-abstract').innerText = data.abstract || "无摘要内容";
+                document.getElementById('res-phage').innerText = data.phageDisplayFocus || "未提及噬菌体展示技术。";
+                document.getElementById('res-wechat').innerText = data.wechatDraft || "推文草稿生成失败。";
+                
+                const findingsUl = document.getElementById('res-findings');
+                findingsUl.innerHTML = "";
+                (data.keyFindings || []).forEach(f => {
                     const li = document.createElement('li');
-                    li.className = "bg-slate-50 p-4 rounded-xl flex gap-3";
-                    li.innerHTML = `<span class="bg-blue-600 text-white w-6 h-6 rounded-lg flex items-center justify-center text-xs font-black shrink-0">${i+1}</span> <span>${f}</span>`;
-                    list.appendChild(li);
+                    li.innerText = f;
+                    findingsUl.appendChild(li);
                 });
 
-                resultSection.classList.remove('hidden');
+                loading.classList.add('hidden');
+                results.classList.remove('hidden');
+                dropZone.classList.add('hidden');
             } catch (err) {
-                alert("总结失败: " + err.message);
-                uploadSection.classList.remove('hidden');
-            } finally { loading.classList.add('hidden'); }
+                alert("分析失败: " + err.message + "\n请检查 Cloudflare API KEY 配置。");
+                location.reload();
+            }
         };
 
         document.getElementById('copy-btn').onclick = () => {
-            navigator.clipboard.writeText(document.getElementById('res-wechat').innerText);
-            alert("已复制！");
+            const content = document.getElementById('res-wechat').innerText;
+            navigator.clipboard.writeText(content).then(() => {
+                alert("推文已复制！可以直接去公众号粘贴。");
+            });
         };
     </script>
 </body>
